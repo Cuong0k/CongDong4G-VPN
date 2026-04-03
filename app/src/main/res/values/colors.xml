@@ -1,28 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#667EEA</color>
-    <color name="primary_dark">#5A67D8</color>
-    <color name="primary_light">#A3BFFA</color>
-    <color name="secondary">#764BA2</color>
-    
-    <color name="success">#48BB78</color>
-    <color name="warning">#ED8936</color>
-    <color name="error">#F56565</color>
-    <color name="info">#4299E1</color>
-    
-    <color name="warning_bg">#FFF5E6</color>
-    
-    <color name="text_primary">#1A202C</color>
-    <color name="text_secondary">#718096</color>
-    
-    <color name="background">#F7FAFC</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="divider">#E2E8F0</color>
-    
-    <!-- Dark theme -->
-    <color name="background_dark">#1A202C</color>
-    <color name="surface_dark">#2D3748</color>
-    <color name="text_primary_dark">#F7FAFC</color>
-    <color name="text_secondary_dark">#A0AEC0</color>
+    <color name="primary">#5C6BC0</color>
+    <color name="primary_dark">#3F51B5</color>
+    <color name="primary_light">#E8EAF6</color>
+    <color name="accent">#FF4081</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="divider">#BDBDBD</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="background">#FAFAFA</color>
 </resources>
