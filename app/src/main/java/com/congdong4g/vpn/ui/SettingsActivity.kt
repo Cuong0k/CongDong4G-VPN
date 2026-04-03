@@ -24,88 +24,66 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
         prefs = PrefsManager(this)
-        
         setupUI()
         setupClickListeners()
         loadUserInfo()
     }
-    
+
     private fun setupUI() {
         binding.toolbar.setNavigationOnClickListener { finish() }
-        
         binding.tvEmail.text = prefs.email ?: ""
         binding.switchDarkMode.isChecked = prefs.isDarkMode
         binding.switchAutoConnect.isChecked = prefs.isAutoConnect
-        
         binding.tvVersion.text = "Phiên bản 1.0.0"
     }
-    
+
     private fun loadUserInfo() {
         lifecycleScope.launch {
             try {
                 val token = prefs.token ?: ""
                 val response = ApiClient.apiService.getUserInfo("Bearer $token")
-                
                 if (response.isSuccessful && response.body()?.data != null) {
                     val user = response.body()?.data!!
-                    
                     binding.tvPlanName.visibility = View.VISIBLE
                     binding.tvPlanName.text = "Gói ID: ${user.planId ?: "Chưa có"}"
-                    
                     binding.tvExpireDate.visibility = View.VISIBLE
                     val expireTime = user.expiredAt ?: 0L
                     if (expireTime > 0) {
-                        val date = Date(expireTime * 1000L)
-                        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        binding.tvExpireDate.text = "Hết hạn: ${formatter.format(date)}"
+                        binding.tvExpireDate.text = "Hết hạn: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(expireTime * 1000L))}"
                     } else {
                         binding.tvExpireDate.text = "Hết hạn: Chưa xác định"
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (e: Exception) { }
         }
     }
-    
+
     private fun setupClickListeners() {
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
             prefs.isDarkMode = isChecked
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
+            AppCompatDelegate.setDefaultNightMode(if (isChecked) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
         }
-        
         binding.switchAutoConnect.setOnCheckedChangeListener { _, isChecked ->
             prefs.isAutoConnect = isChecked
         }
-        
         binding.btnClearHistory.setOnClickListener {
             prefs.clearConnectionHistory()
             Toast.makeText(this, "Đã xóa lịch sử", Toast.LENGTH_SHORT).show()
         }
-        
         binding.btnLogout.setOnClickListener {
-            showLogoutDialog()
+            AlertDialog.Builder(this)
+                .setTitle("Đăng xuất")
+                .setMessage("Bạn có chắc muốn đăng xuất?")
+                .setPositiveButton("Đăng xuất") { _, _ ->
+                    prefs.clearAll()
+                    startActivity(Intent(this, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
+                    finish()
+                }
+                .setNegativeButton("Hủy", null)
+                .show()
         }
-    }
-    
-    private fun showLogoutDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Đăng xuất")
-            .setMessage("Bạn có chắc muốn đăng xuất?")
-            .setPositiveButton("Đăng xuất") { _, _ ->
-                prefs.clearAll()
-                val intent = Intent(this, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
-            }
-            .setNegativeButton("Hủy", null)
-            .show()
     }
 }
