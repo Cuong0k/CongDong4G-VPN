@@ -24,4 +24,5 @@
     <color name="surface_dark">#2D3748</color>
     <color name="text_primary_dark">#F7FAFC</color>
     <color name="text_secondary_dark">#A0AEC0</color>
+    <color name="white">#FFFFFF</color>
 </resources>
