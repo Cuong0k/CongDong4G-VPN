@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CongDong4G VPN</string>
+    
+    <!-- Auth -->
+    <string name="login">Đăng nhập</string>
+    <string name="register">Đăng ký</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="no_account">Chưa có tài khoản?</string>
+    <string name="have_account">Đã có tài khoản?</string>
+    <string name="invite_code">Mã giới thiệu</string>
+    
+    <!-- Main -->
+    <string name="connect">Kết nối</string>
+    <string name="disconnect">Ngắt kết nối</string>
+    <string name="connecting">Đang kết nối...</string>
+    <string name="connected">Đã kết nối</string>
+    <string name="disconnected">Chưa kết nối</string>
+    <string name="select_server">Chọn server</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_plan">Gói cước</string>
+    <string name="nav_speed_test">Tốc độ</string>
+    <string name="nav_settings">Cài đặt</string>
+    
+    <!-- Plan -->
+    <string name="plans">Gói cước</string>
+    <string name="select_plan">Chọn gói cước</string>
+    <string name="month">Tháng</string>
+    <string name="quarter">3 Tháng</string>
+    <string name="half_year">6 Tháng</string>
+    <string name="year">12 Tháng</string>
+    
+    <!-- Payment -->
+    <string name="payment">Thanh toán</string>
+    <string name="bank_transfer">Chuyển khoản</string>
+    <string name="bank_name">Ngân hàng</string>
+    <string name="account_number">Số tài khoản</string>
+    <string name="account_name">Chủ tài khoản</string>
+    <string name="transfer_content">Nội dung chuyển khoản</string>
+    <string name="copy">Sao chép</string>
+    <string name="copied">Đã sao chép</string>
+    <string name="submit_order">Đã chuyển khoản</string>
+    
+    <!-- Speed Test -->
+    <string name="speed_test">Kiểm tra tốc độ</string>
+    <string name="start">Bắt đầu</string>
+    <string name="stop">Dừng</string>
+    <string name="ping">Ping</string>
+    <string name="download">Tải xuống</string>
+    <string name="upload">Tải lên</string>
+    
+    <!-- Settings -->
+    <string name="settings">Cài đặt</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="auto_connect">Tự động kết nối</string>
+    <string name="connection_history">Lịch sử kết nối</string>
+    <string name="clear_history">Xóa lịch sử</string>
+    <string name="version">Phiên bản</string>
+    
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="error">Lỗi</string>
+    <string name="loading">Đang tải...</string>
+    <string name="no_data">Không có dữ liệu</string>
+    <string name="retry">Thử lại</string>
+</resources>
