@@ -125,6 +125,7 @@ data class CreateOrderRequest(
 )
 
 data class OrderResponse(
+    val message: String? = null,
     val status: String? = null,
     val data: String? = null  // trade_no
 )
