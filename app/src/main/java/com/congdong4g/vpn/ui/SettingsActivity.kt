@@ -41,7 +41,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun loadUserInfo() {
         lifecycleScope.launch {
             try {
-                val token = prefs.token ?: ""
+                val token = prefs.token ?: return@launch
                 val response = ApiClient.apiService.getUserInfo("Bearer $token")
                 if (response.isSuccessful && response.body()?.data != null) {
                     val user = response.body()?.data!!
