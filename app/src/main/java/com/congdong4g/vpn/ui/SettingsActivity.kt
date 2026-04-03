@@ -8,7 +8,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.congdong4g.vpn.api.ApiClient
 import com.congdong4g.vpn.databinding.ActivitySettingsBinding
 import com.congdong4g.vpn.utils.PrefsManager
@@ -36,7 +35,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupUI() {
         binding.toolbar.setNavigationOnClickListener { finish() }
         
-        binding.tvEmail.text = prefs.getEmail()
+        binding.tvEmail.text = prefs.getEmail() ?: ""
         binding.switchDarkMode.isChecked = prefs.isDarkMode()
         binding.switchAutoConnect.isChecked = prefs.isAutoConnect()
         
@@ -52,15 +51,13 @@ class SettingsActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body()?.data != null) {
                     val user = response.body()?.data!!
                     
-                    // Hiển thị tên gói
                     binding.tvPlanName.visibility = View.VISIBLE
-                    binding.tvPlanName.text = "Gói: ${user.plan?.name ?: "Chưa có"}"
+                    binding.tvPlanName.text = "Gói: ${user.plan_id ?: "Chưa có"}"
                     
-                    // Hiển thị ngày hết hạn
                     binding.tvExpireDate.visibility = View.VISIBLE
                     val expireTime = user.expired_at ?: 0
                     if (expireTime > 0) {
-                        val date = Date(expireTime * 1000)
+                        val date = Date(expireTime * 1000L)
                         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                         binding.tvExpireDate.text = "Hết hạn: ${formatter.format(date)}"
                     } else {
@@ -90,17 +87,11 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnClearHistory.setOnClickListener {
             prefs.clearConnectionHistory()
             Toast.makeText(this, "Đã xóa lịch sử", Toast.LENGTH_SHORT).show()
-            loadConnectionHistory()
         }
         
         binding.btnLogout.setOnClickListener {
             showLogoutDialog()
         }
-    }
-    
-    private fun loadConnectionHistory() {
-        val history = prefs.getConnectionHistory()
-        // Update RecyclerView if needed
     }
     
     private fun showLogoutDialog() {
