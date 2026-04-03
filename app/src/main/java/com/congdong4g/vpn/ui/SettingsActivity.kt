@@ -41,8 +41,8 @@ class SettingsActivity : AppCompatActivity() {
     private fun loadUserInfo() {
         lifecycleScope.launch {
             try {
-                val token = prefs.token ?: return@launch
-                val response = ApiClient.apiService.getUserInfo("Bearer $token")
+                val authData = prefs.token ?: return@launch
+                val response = ApiClient.apiService.getUserInfo(authData)
                 if (response.isSuccessful && response.body()?.data != null) {
                     val user = response.body()?.data!!
                     binding.tvPlanName.visibility = View.VISIBLE

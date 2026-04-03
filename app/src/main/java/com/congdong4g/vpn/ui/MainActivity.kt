@@ -1,16 +1,15 @@
 package com.congdong4g.vpn.ui
 
 import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.VpnService
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.congdong4g.vpn.R
@@ -28,12 +27,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: PrefsManager
-    
+
     private var servers = listOf<Server>()
     private var selectedServer: Server? = null
     private var subscribeUrl: String? = null
-    private var serverConfigs = mutableMapOf<Int, String>() // server id -> config url
-    
+
     private val handler = Handler(Looper.getMainLooper())
     private val updateRunnable = object : Runnable {
         override fun run() {
@@ -54,9 +52,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         prefs = PrefsManager(this)
-        
+
         setupUI()
         setupClickListeners()
         loadUserInfo()
@@ -98,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         if (SingBoxService.isRunning) {
             binding.tvUpload.text = formatBytes(SingBoxService.uploadBytes)
             binding.tvDownload.text = formatBytes(SingBoxService.downloadBytes)
-            
+
             val duration = (System.currentTimeMillis() - SingBoxService.connectedTime) / 1000
             val hours = duration / 3600
             val minutes = (duration % 3600) / 60
@@ -120,6 +118,10 @@ class MainActivity : AppCompatActivity() {
             showServerDialog()
         }
 
+        binding.btnRefreshServer.setOnClickListener {
+            refreshServers()
+        }
+
         binding.navPlan.setOnClickListener {
             startActivity(Intent(this, PlanActivity::class.java))
         }
@@ -133,12 +135,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun refreshServers() {
+        val rotation = AnimationUtils.loadAnimation(this, R.anim.rotate)
+        binding.btnRefreshServer.startAnimation(rotation)
+        Toast.makeText(this, "Đang cập nhật máy chủ...", Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch {
+            try {
+                val authData = prefs.token ?: return@launch
+                val response = ApiClient.apiService.getServers(authData)
+
+                if (response.isSuccessful && response.body()?.data != null) {
+                    servers = response.body()?.data ?: emptyList()
+                    updateServerUI()
+                    Toast.makeText(this@MainActivity, "Đã cập nhật ${servers.size} máy chủ", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@MainActivity, "Không thể cập nhật", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                binding.btnRefreshServer.clearAnimation()
+            }
+        }
+    }
+
     private fun loadUserInfo() {
         lifecycleScope.launch {
             try {
-                val token = prefs.token ?: return@launch
+                val authData = prefs.token ?: return@launch
 
-                val userResponse = ApiClient.apiService.getUserInfo("Bearer $token")
+                val userResponse = ApiClient.apiService.getUserInfo(authData)
                 if (userResponse.isSuccessful && userResponse.body()?.data != null) {
                     val user = userResponse.body()?.data!!
                     val used = user.upload + user.download
@@ -155,7 +182,7 @@ class MainActivity : AppCompatActivity() {
                     binding.progressData.progress = if (total > 0) ((used * 100) / total).toInt() else 0
                 }
 
-                val subResponse = ApiClient.apiService.getSubscription("Bearer $token")
+                val subResponse = ApiClient.apiService.getSubscription(authData)
                 if (subResponse.isSuccessful && subResponse.body()?.data != null) {
                     subscribeUrl = subResponse.body()?.data?.subscribeUrl
                 }
@@ -168,14 +195,14 @@ class MainActivity : AppCompatActivity() {
     private fun loadServers() {
         lifecycleScope.launch {
             try {
-                val token = prefs.token ?: return@launch
-                val response = ApiClient.apiService.getServers("Bearer $token")
+                val authData = prefs.token ?: return@launch
+                val response = ApiClient.apiService.getServers(authData)
                 if (response.isSuccessful && response.body()?.data != null) {
                     servers = response.body()?.data ?: emptyList()
                     if (servers.isNotEmpty()) {
                         selectedServer = servers[0]
-                        updateServerUI()
                     }
+                    updateServerUI()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -184,8 +211,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateServerUI() {
+        binding.tvServerCount.text = "${servers.size} máy chủ"
         selectedServer?.let { server ->
             binding.tvServerName.text = server.name
+        } ?: run {
+            binding.tvServerName.text = "Chọn máy chủ"
         }
     }
 
@@ -196,13 +226,17 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val serverNames = servers.map { it.name }.toTypedArray()
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Chọn máy chủ")
-            .setItems(serverNames) { _, which ->
+        val serverNames = servers.map { "${it.name} (${it.online} online)" }.toTypedArray()
+        val currentIndex = servers.indexOf(selectedServer).coerceAtLeast(0)
+
+        AlertDialog.Builder(this)
+            .setTitle("Chọn máy chủ (${servers.size})")
+            .setSingleChoiceItems(serverNames, currentIndex) { dialog, which ->
                 selectedServer = servers[which]
                 updateServerUI()
+                dialog.dismiss()
             }
+            .setNegativeButton("Hủy", null)
             .show()
     }
 
@@ -225,17 +259,15 @@ class MainActivity : AppCompatActivity() {
             try {
                 binding.btnConnect.isEnabled = false
                 binding.tvStatus.text = "Đang kết nối..."
-                
-                // Get server config from subscription
+
                 val config = getServerConfig()
-                
+
                 if (config.isNotEmpty()) {
                     val intent = Intent(this@MainActivity, SingBoxService::class.java)
                     intent.action = SingBoxService.ACTION_START
                     intent.putExtra(SingBoxService.EXTRA_CONFIG, config)
                     startService(intent)
-                    
-                    // Wait a bit and update UI
+
                     kotlinx.coroutines.delay(1000)
                     updateUI()
                     handler.post(updateRunnable)
@@ -255,18 +287,15 @@ class MainActivity : AppCompatActivity() {
             try {
                 val url = subscribeUrl ?: return@withContext ""
                 val content = URL(url).readText()
-                
-                // Decode base64 if needed
+
                 val decoded = try {
                     String(android.util.Base64.decode(content, android.util.Base64.DEFAULT))
                 } catch (e: Exception) {
                     content
                 }
-                
-                // Get first server config
+
                 val lines = decoded.split("\n").filter { it.isNotEmpty() }
-                
-                // Find config matching selected server
+
                 selectedServer?.let { server ->
                     for (line in lines) {
                         if (line.contains(server.name) || line.contains(server.host)) {
@@ -274,8 +303,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-                
-                // Return first config if no match
+
                 lines.firstOrNull()?.trim() ?: ""
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -288,7 +316,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, SingBoxService::class.java)
         intent.action = SingBoxService.ACTION_STOP
         startService(intent)
-        
+
         handler.removeCallbacks(updateRunnable)
         handler.postDelayed({
             updateUI()

@@ -75,9 +75,9 @@ class PaymentActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val token = prefs.token ?: ""
+                val authData = prefs.token ?: ""
                 val response = ApiClient.apiService.createOrder(
-                    "Bearer $token",
+                    authData,
                     CreateOrderRequest(planId, selectedPeriod)
                 )
                 if (response.isSuccessful && response.body()?.data != null) {

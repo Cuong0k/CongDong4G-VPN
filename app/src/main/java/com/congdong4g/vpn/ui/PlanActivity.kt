@@ -30,31 +30,24 @@ class PlanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPlanBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
         prefs = PrefsManager(this)
-        
         binding.toolbar.setNavigationOnClickListener { finish() }
-        
         adapter = PlanAdapter()
         binding.recyclerPlans.layoutManager = LinearLayoutManager(this)
         binding.recyclerPlans.adapter = adapter
-        
         loadPlans()
     }
 
     private fun loadPlans() {
         binding.progressBar.visibility = View.VISIBLE
-        
         lifecycleScope.launch {
             try {
-                val token = prefs.token
-                if (token.isNullOrEmpty()) {
+                val authData = prefs.token
+                if (authData.isNullOrEmpty()) {
                     Toast.makeText(this@PlanActivity, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
-                
-                val response = ApiClient.apiService.getPlans("Bearer $token")
-                
+                val response = ApiClient.apiService.getPlans(authData)
                 if (response.isSuccessful) {
                     val body = response.body()
                     if (body?.data != null && body.data.isNotEmpty()) {
@@ -68,7 +61,6 @@ class PlanActivity : AppCompatActivity() {
                     Toast.makeText(this@PlanActivity, "Lỗi: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
                 Toast.makeText(this@PlanActivity, "Lỗi kết nối: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
@@ -79,8 +71,7 @@ class PlanActivity : AppCompatActivity() {
     private fun formatPrice(price: Int?): String {
         if (price == null || price == 0) return "Miễn phí"
         val priceVND = price / 100
-        val formatter = NumberFormat.getInstance(Locale("vi", "VN"))
-        return "Từ ${formatter.format(priceVND)} đ"
+        return "Từ ${NumberFormat.getInstance(Locale("vi", "VN")).format(priceVND)} đ"
     }
 
     private fun formatData(bytes: Long): String = when {
@@ -90,29 +81,22 @@ class PlanActivity : AppCompatActivity() {
     }
 
     inner class PlanAdapter : RecyclerView.Adapter<PlanAdapter.VH>() {
-        
         inner class VH(val b: ItemPlanBinding) : RecyclerView.ViewHolder(b.root)
-        
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            return VH(ItemPlanBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        }
-        
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(ItemPlanBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         override fun getItemCount() = plans.size
-        
         override fun onBindViewHolder(holder: VH, position: Int) {
             val plan = plans[position]
             holder.b.tvPlanName.text = plan.name
             holder.b.tvPlanData.text = formatData(plan.transferEnable)
             holder.b.tvPlanDevice.text = "${plan.deviceLimit ?: 1} thiết bị"
             holder.b.tvPlanPrice.text = formatPrice(plan.monthPrice)
-            
             holder.b.root.setOnClickListener {
-                val intent = Intent(this@PlanActivity, PaymentActivity::class.java)
-                intent.putExtra("plan_id", plan.id)
-                intent.putExtra("plan_name", plan.name)
-                intent.putExtra("plan_price", (plan.monthPrice ?: 0).toLong() / 100)
-                intent.putExtra("period", "month_price")
-                startActivity(intent)
+                startActivity(Intent(this@PlanActivity, PaymentActivity::class.java).apply {
+                    putExtra("plan_id", plan.id)
+                    putExtra("plan_name", plan.name)
+                    putExtra("plan_price", (plan.monthPrice ?: 0).toLong() / 100)
+                    putExtra("period", "month_price")
+                })
             }
         }
     }
