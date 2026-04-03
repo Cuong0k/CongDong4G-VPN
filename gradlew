@@ -1,4 +1,4 @@
-#!/bin/sh
-JAVACMD="java"
-CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
-exec "$JAVACMD" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+#!/usr/bin/env sh
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+APP_HOME=$( cd "${APP_HOME:-./}" && pwd -P )
+exec java -classpath "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain "$@"
