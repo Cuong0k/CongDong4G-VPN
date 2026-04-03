@@ -35,9 +35,9 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupUI() {
         binding.toolbar.setNavigationOnClickListener { finish() }
         
-        binding.tvEmail.text = prefs.getEmail() ?: ""
-        binding.switchDarkMode.isChecked = prefs.isDarkMode()
-        binding.switchAutoConnect.isChecked = prefs.isAutoConnect()
+        binding.tvEmail.text = prefs.email ?: ""
+        binding.switchDarkMode.isChecked = prefs.isDarkMode
+        binding.switchAutoConnect.isChecked = prefs.isAutoConnect
         
         binding.tvVersion.text = "Phiên bản 1.0.0"
     }
@@ -45,17 +45,17 @@ class SettingsActivity : AppCompatActivity() {
     private fun loadUserInfo() {
         lifecycleScope.launch {
             try {
-                val token = prefs.getToken() ?: ""
+                val token = prefs.token ?: ""
                 val response = ApiClient.apiService.getUserInfo("Bearer $token")
                 
                 if (response.isSuccessful && response.body()?.data != null) {
                     val user = response.body()?.data!!
                     
                     binding.tvPlanName.visibility = View.VISIBLE
-                    binding.tvPlanName.text = "Gói: ${user.plan_id ?: "Chưa có"}"
+                    binding.tvPlanName.text = "Gói ID: ${user.planId ?: "Chưa có"}"
                     
                     binding.tvExpireDate.visibility = View.VISIBLE
-                    val expireTime = user.expired_at ?: 0
+                    val expireTime = user.expiredAt ?: 0L
                     if (expireTime > 0) {
                         val date = Date(expireTime * 1000L)
                         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -72,7 +72,7 @@ class SettingsActivity : AppCompatActivity() {
     
     private fun setupClickListeners() {
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            prefs.setDarkMode(isChecked)
+            prefs.isDarkMode = isChecked
             if (isChecked) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             } else {
@@ -81,7 +81,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         binding.switchAutoConnect.setOnCheckedChangeListener { _, isChecked ->
-            prefs.setAutoConnect(isChecked)
+            prefs.isAutoConnect = isChecked
         }
         
         binding.btnClearHistory.setOnClickListener {

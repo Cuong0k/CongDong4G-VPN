@@ -45,7 +45,7 @@ class PlanActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val token = prefs.getToken() ?: ""
+                val token = prefs.token ?: ""
                 val response = ApiClient.apiService.getPlanList("Bearer $token")
                 
                 if (response.isSuccessful && response.body()?.data != null) {
@@ -62,7 +62,7 @@ class PlanActivity : AppCompatActivity() {
         }
     }
     
-    private fun formatPrice(price: Long): String {
+    private fun formatPrice(price: Int): String {
         val priceVND = price / 100
         val formatter = NumberFormat.getInstance(Locale("vi", "VN"))
         return "${formatter.format(priceVND)} đ"
@@ -89,16 +89,16 @@ class PlanActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: PlanViewHolder, position: Int) {
             val plan = plans[position]
             holder.itemBinding.apply {
-                tvPlanName.text = plan.name ?: ""
-                tvData.text = formatData(plan.transfer_enable ?: 0)
-                tvDevices.text = "${plan.device_limit ?: 2} thiết bị"
-                tvPrice.text = "Từ ${formatPrice(plan.month_price ?: 0)}"
+                tvPlanName.text = plan.name
+                tvData.text = formatData(plan.transferEnable)
+                tvDevices.text = "${plan.deviceLimit ?: 2} thiết bị"
+                tvPrice.text = "Từ ${formatPrice(plan.monthPrice ?: 0)}"
                 
                 root.setOnClickListener {
                     val intent = Intent(this@PlanActivity, PaymentActivity::class.java)
-                    intent.putExtra("plan_id", plan.id ?: 0)
-                    intent.putExtra("plan_name", plan.name ?: "")
-                    intent.putExtra("plan_price", (plan.month_price ?: 0) / 100)
+                    intent.putExtra("plan_id", plan.id)
+                    intent.putExtra("plan_name", plan.name)
+                    intent.putExtra("plan_price", (plan.monthPrice ?: 0) / 100L)
                     intent.putExtra("period", "month_price")
                     startActivity(intent)
                 }
