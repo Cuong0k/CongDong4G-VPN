@@ -1,3 +1,4 @@
-#!/bin/bash
-export GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
-exec gradle "$@"
+#!/bin/sh
+JAVACMD="java"
+CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+exec "$JAVACMD" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
