@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:colorBackground">
+    android:orientation="vertical"
+    android:background="@color/white">
 
-    <com.google.android.material.appbar.MaterialToolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/white"
         app:navigationIcon="@drawable/ic_back"
         app:title="Cài đặt"
-        app:titleCentered="true" />
+        app:titleTextColor="@color/text_primary" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,7 +25,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Account Section -->
+            <!-- Tài khoản -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -35,7 +34,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -52,7 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Email"
-                        android:textColor="?android:textColorSecondary"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -60,15 +59,32 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="user@email.com"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp" />
 
+                    <TextView
+                        android:id="@+id/tvPlanName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:textColor="@color/primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvExpireDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Settings Section -->
+            <!-- Cài đặt -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -78,7 +94,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -90,77 +106,69 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Dark Mode -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:padding="16dp">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_dark_mode"
-                            app:tint="?android:textColorSecondary" />
+                            app:tint="@color/text_secondary" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
+                            android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:text="Chế độ tối"
-                            android:textColor="?android:textColorPrimary"
+                            android:textColor="@color/text_primary"
                             android:textSize="16sp" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/switchDarkMode"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content" />
-
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginStart="52dp"
+                        android:layout_marginStart="56dp"
                         android:background="@color/divider" />
 
-                    <!-- Auto Connect -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:padding="16dp">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_auto_connect"
-                            app:tint="?android:textColorSecondary" />
+                            app:tint="@color/text_secondary" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
+                            android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:text="Tự động kết nối"
-                            android:textColor="?android:textColorPrimary"
+                            android:textColor="@color/text_primary"
                             android:textSize="16sp" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/switchAutoConnect"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content" />
-
                     </LinearLayout>
-
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- History Section -->
+            <!-- Lịch sử -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -170,57 +178,43 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvNoHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Chưa có lịch sử kết nối"
-                android:textColor="?android:textColorSecondary"
-                android:visibility="gone" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:nestedScrollingEnabled="false" />
+                android:layout_marginTop="8dp" />
 
-            <com.google.android.material.button.MaterialButton
+            <TextView
                 android:id="@+id/btnClearHistory"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginTop="8dp"
-                android:text="Xóa lịch sử"
-                android:textColor="@color/error" />
+                android:padding="8dp"
+                android:text="XÓA LỊCH SỬ"
+                android:textColor="@color/error"
+                android:textSize="14sp" />
 
-            <!-- Logout Button -->
+            <!-- Đăng xuất -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
                 android:text="ĐĂNG XUẤT"
                 android:textColor="@color/error"
-                app:cornerRadius="8dp"
                 app:strokeColor="@color/error" />
 
-            <!-- Version -->
             <TextView
                 android:id="@+id/tvVersion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
+                android:layout_gravity="center"
                 android:layout_marginTop="24dp"
-                android:text="Phiên bản 1.0.0"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
         </LinearLayout>
-
     </ScrollView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -10,117 +10,102 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.congdong4g.vpn.CongDong4GApp
-import com.congdong4g.vpn.R
 import com.congdong4g.vpn.api.ApiClient
 import com.congdong4g.vpn.databinding.ActivityPlanBinding
 import com.congdong4g.vpn.databinding.ItemPlanBinding
 import com.congdong4g.vpn.model.Plan
-import com.congdong4g.vpn.utils.Utils
+import com.congdong4g.vpn.utils.PrefsManager
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 
 class PlanActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlanBinding
+    private lateinit var prefs: PrefsManager
     private val plans = mutableListOf<Plan>()
-    private lateinit var adapter: PlanAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlanBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        setupViews()
+        
+        prefs = PrefsManager(this)
+        
+        binding.toolbar.setNavigationOnClickListener { finish() }
+        
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = PlanAdapter()
+        
         loadPlans()
     }
-
-    private fun setupViews() {
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
-
-        adapter = PlanAdapter(plans) { plan ->
-            showPlanDetail(plan)
-        }
-        binding.recyclerPlans.layoutManager = LinearLayoutManager(this)
-        binding.recyclerPlans.adapter = adapter
-    }
-
+    
     private fun loadPlans() {
         binding.progressBar.visibility = View.VISIBLE
-
+        
         lifecycleScope.launch {
             try {
-                val token = CongDong4GApp.instance.prefsManager.token ?: return@launch
-                val response = ApiClient.apiService.getPlans("$token")
-
+                val token = prefs.getToken() ?: ""
+                val response = ApiClient.apiService.getPlanList("Bearer $token")
+                
                 if (response.isSuccessful && response.body()?.data != null) {
                     plans.clear()
                     plans.addAll(response.body()?.data ?: emptyList())
-                    adapter.notifyDataSetChanged()
+                    binding.recyclerView.adapter?.notifyDataSetChanged()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(this@PlanActivity, "Lỗi tải danh sách gói", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@PlanActivity, "Lỗi tải gói cước", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
         }
     }
-
-    private fun showPlanDetail(plan: Plan) {
-        val intent = Intent(this, PaymentActivity::class.java)
-        intent.putExtra("plan_id", plan.id)
-        intent.putExtra("plan_name", plan.name)
-        intent.putExtra("plan_month_price", plan.monthPrice ?: 0)
-        intent.putExtra("plan_quarter_price", plan.quarterPrice ?: 0)
-        intent.putExtra("plan_half_year_price", plan.halfYearPrice ?: 0)
-        intent.putExtra("plan_year_price", plan.yearPrice ?: 0)
-        intent.putExtra("plan_transfer", plan.transferEnable)
-        intent.putExtra("plan_device_limit", plan.deviceLimit ?: 0)
-        startActivity(intent)
+    
+    private fun formatPrice(price: Long): String {
+        // API trả về đơn vị xu, chia 100 để ra VND
+        val priceVND = price / 100
+        val formatter = NumberFormat.getInstance(Locale("vi", "VN"))
+        return "${formatter.format(priceVND)} đ"
     }
-
-    // Adapter
-    inner class PlanAdapter(
-        private val items: List<Plan>,
-        private val onClick: (Plan) -> Unit
-    ) : RecyclerView.Adapter<PlanAdapter.ViewHolder>() {
-
-        inner class ViewHolder(val binding: ItemPlanBinding) : RecyclerView.ViewHolder(binding.root)
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val binding = ItemPlanBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            return ViewHolder(binding)
+    
+    private fun formatData(bytes: Long): String {
+        return when {
+            bytes >= 1_073_741_824 -> String.format("%.2f GB", bytes / 1_073_741_824.0)
+            bytes >= 1_048_576 -> String.format("%.2f MB", bytes / 1_048_576.0)
+            bytes >= 1024 -> String.format("%.2f KB", bytes / 1024.0)
+            else -> "$bytes B"
         }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val plan = items[position]
-            with(holder.binding) {
+    }
+    
+    inner class PlanAdapter : RecyclerView.Adapter<PlanAdapter.PlanViewHolder>() {
+        
+        inner class PlanViewHolder(val binding: ItemPlanBinding) : RecyclerView.ViewHolder(binding.root)
+        
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlanViewHolder {
+            val binding = ItemPlanBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            return PlanViewHolder(binding)
+        }
+        
+        override fun onBindViewHolder(holder: PlanViewHolder, position: Int) {
+            val plan = plans[position]
+            holder.binding.apply {
                 tvPlanName.text = plan.name
-                tvPlanData.text = Utils.formatBytes(plan.transferEnable)
+                tvData.text = formatData(plan.transfer_enable ?: 0)
+                tvDevices.text = "${plan.device_limit ?: 2} thiết bị"
+                tvPrice.text = "Từ ${formatPrice(plan.month_price ?: 0)}"
                 
-                val deviceText = if (plan.deviceLimit != null && plan.deviceLimit > 0) {
-                    "${plan.deviceLimit} thiết bị"
-                } else {
-                    "Không giới hạn"
+                root.setOnClickListener {
+                    val intent = Intent(this@PlanActivity, PaymentActivity::class.java)
+                    intent.putExtra("plan_id", plan.id)
+                    intent.putExtra("plan_name", plan.name)
+                    intent.putExtra("plan_price", (plan.month_price ?: 0) / 100)
+                    intent.putExtra("period", "month_price")
+                    startActivity(intent)
                 }
-                tvPlanDevice.text = deviceText
-
-                // Show lowest price
-                val prices = listOfNotNull(
-                    plan.monthPrice,
-                    plan.quarterPrice,
-                    plan.halfYearPrice,
-                    plan.yearPrice
-                )
-                val minPrice = prices.minOrNull() ?: 0
-                tvPlanPrice.text = "Từ ${Utils.formatPrice(minPrice)}"
-
-                root.setOnClickListener { onClick(plan) }
             }
         }
-
-        override fun getItemCount() = items.size
+        
+        override fun getItemCount() = plans.size
     }
 }
