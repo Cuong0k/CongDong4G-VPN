@@ -48,7 +48,18 @@ interface ApiService {
     @GET("api/v1/user/server/fetch")
     suspend fun getServers(@Query("auth_data") authData: String): Response<ServersResponse>
 
-    // Subscribe (get config)
+    // Subscribe - dùng auth_data thay vì token
     @GET("api/v1/client/subscribe")
-    suspend fun getConfig(@Query("token") token: String): Response<String>
+    suspend fun getSubscribeConfig(@Query("auth_data") authData: String): Response<SubscribeConfigResponse>
 }
+
+// Response model cho subscribe config (trả về JSON với subscribe_url)
+data class SubscribeConfigResponse(
+    val status: String? = null,
+    val data: SubscribeConfigData? = null
+)
+
+data class SubscribeConfigData(
+    val subscribeUrl: String = "",
+    val subscribe: String = ""  // base64 config content
+)

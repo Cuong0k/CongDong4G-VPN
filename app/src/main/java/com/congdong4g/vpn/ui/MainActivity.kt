@@ -285,25 +285,20 @@ class MainActivity : AppCompatActivity() {
     private suspend fun getServerConfig(): String {
         return withContext(Dispatchers.IO) {
             try {
-                val url = subscribeUrl ?: return@withContext ""
-                val content = URL(url).readText()
-
+                val authData = prefs.token ?: return@withContext ""
+                val resp = ApiClient.apiService.getSubscribeConfig(authData)
+                if (!resp.isSuccessful || resp.body()?.data == null) return@withContext ""
+                val subscribeContent = resp.body()?.data?.subscribe ?: ""
+                if (subscribeContent.isBlank()) return@withContext ""
                 val decoded = try {
-                    String(android.util.Base64.decode(content, android.util.Base64.DEFAULT))
+                    String(android.util.Base64.decode(subscribeContent.trim(), android.util.Base64.DEFAULT))
                 } catch (e: Exception) {
-                    content
+                    subscribeContent
                 }
-
-                val lines = decoded.split("\n").filter { it.isNotEmpty() }
-
+                val lines = decoded.split("\n").filter { it.isNotBlank() }
                 selectedServer?.let { server ->
-                    for (line in lines) {
-                        if (line.contains(server.name) || line.contains(server.host)) {
-                            return@withContext line.trim()
-                        }
-                    }
+                    lines.find { line -> line.contains(server.name, true) || line.contains(server.host, true) }?.let { return@withContext it.trim() }
                 }
-
                 lines.firstOrNull()?.trim() ?: ""
             } catch (e: Exception) {
                 e.printStackTrace()
