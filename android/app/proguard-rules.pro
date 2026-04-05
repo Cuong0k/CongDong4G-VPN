@@ -1,0 +1,4 @@
+-keep class com.congdong4g.vpn.** { *; }
+-keep class libXray.** { *; }
+-keep class com.facebook.react.** { *; }
+-dontwarn libXray.**
