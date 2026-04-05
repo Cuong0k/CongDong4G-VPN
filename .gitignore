@@ -1,0 +1,11 @@
+node_modules/
+build/
+.gradle
+local.properties
+*.iml
+.idea
+android/app/debug
+android/app/release
+.env
+*.jsbundle
+.metro_cache/
